@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<title>pc</title>
+	<link rel="stylesheet" type="text/css" href="/static/css/pc.css">
+</head>
+<body>
+<div class="container">
+
+</div>
+<script src="/socket.io/socket.io.js"></script>
+<script src="/static/js/client.js"></script>
+<script>
+	(function() {
+		const server = io('/control');
+		const type = "contents-tablet";
+		const control = new Server(server, type);
+
+		});
+		const sender = document.querySelector("#sender");
+		const status = document.querySelector("#status");
+
+		server.on("status-change", (data) => {
+			console.log(data);
+			if(typeof(data) === "string") data = JSON.parse(data);
+			status_change(data);
+		});
+		
+		let status_change = (_data) => {
+			console.log(_data.sender + " : " + _data.status);
+			sender.innerText = _data.sender;
+			status.innerText = _data.status;
+		};
+	
+	})();
+</script>
+</body>
+</html>

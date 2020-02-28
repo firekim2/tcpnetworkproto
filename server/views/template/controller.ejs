@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<title>controller-tablet</title>
+	<link rel="stylesheet" type="text/css" href="/static/css/controller.css">
+</head>
+<body>
+<div class="container">
+	<div id="control-pannel">
+	</div>
+</div>
+<script src="/socket.io/socket.io.js"></script>
+<script src="/static/js/client.js"></script>
+<script>
+	
+	(function() {
+
+		class Button {
+			constructor(_name){
+				this.name = _name;
+				let _button = document.createElement("div");
+				_button.classList.add("button");
+				let _button_text = document.createElement("h3");
+				_button_text.classList.add("button-text");
+				_button_text.innerText = this.name;
+				_button.appendChild(_button_text);
+				_button.addEventListener("click", (event)=>{
+					control.set_status(this.name);
+				});
+				control_pannel.appendChild(_button);
+			}
+		}
+	
+		const server = io('/control');
+		const type = "controller";
+		const control = new Server(server, type);
+
+		const control_pannel = document.querySelector("#control-pannel");
+		new Button("status-0");
+		new Button("status-1");
+		server.on("status-change", (data) => {
+			console.log(data);
+			if(typeof(data) === "string") data = JSON.parse(data);
+			status_change(data);
+		});
+		
+		let status_change = (_data) => {
+			console.log(_data.sender + " : " + _data.status);
+		};
+		
+	})();
+</script>
+</body>
+</html>
