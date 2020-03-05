@@ -2,53 +2,78 @@
 <html>
 <head>
 	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, user-scalable=no">
 	<title>controller-tablet</title>
 	<link rel="stylesheet" type="text/css" href="/static/css/controller.css">
 </head>
 <body>
 <div class="container">
-	<div id="control-pannel">
+	<div id="control-panel-story">
+	</div>
+	<div id="control-panel">
 	</div>
 </div>
 <script src="/socket.io/socket.io.js"></script>
 <script src="/static/js/client.js"></script>
 <script>
-	
-	(function() {
 
+	(function() {
+		const control_panel = document.querySelector("#control-panel-story");
 		class Button {
-			constructor(_name){
+			static button_list = {};
+			constructor(_name, _code, _type, _target = control_panel){
 				this.name = _name;
-				let _button = document.createElement("div");
-				_button.classList.add("button");
+				this.code = _code;
+				this.type = _type;
+				this.button = document.createElement("div");
+				this.button.classList.add("button");
+				this.button.classList.add(this.type);
 				let _button_text = document.createElement("h3");
 				_button_text.classList.add("button-text");
 				_button_text.innerText = this.name;
-				_button.appendChild(_button_text);
-				_button.addEventListener("click", (event)=>{
-					control.set_status(this.name);
+				this.button.appendChild(_button_text);
+				this.button.addEventListener("click", (event)=>{
+					control.set_status(this.code);
 				});
-				control_pannel.appendChild(_button);
+				this.wrapper = document.createElement("div");
+				this.wrapper.classList.add("button-wrapper");
+				this.wrapper.appendChild(this.button);
+				if(_target !== control_panel) _target = Button.get_wrapper_by_code(_target);
+				_target.appendChild(this.wrapper);
+				Button.button_list[this.code] = this;
+			}
+
+			static get_wrapper_by_code(_code){
+				return Button.button_list[_code] ? Button.button_list[_code].wrapper : false;
 			}
 		}
-	
+
+
 		const server = io('/control');
 		const type = "controller";
 		const control = new Server(server, type);
 
-		const control_pannel = document.querySelector("#control-pannel");
-		new Button("status-0");
-		new Button("status-1");
+		new Button("차량 만남","manual-0", "main-button");
+		new Button("호흡 유도","manual-1", "main-button");
+		new Button("장난치기","manual-2", "main-button");
+		new Button("노래 부르기","manual-3", "main-button");
+		new Button("비눗방울","manual-4", "main-button");
+		new Button("비눗방울-발사","manual-4-1", "sub-button", "manual-4");
+		new Button("치료 설명","manual-5", "main-button");
+		new Button("칭찬 스티커","manual-6", "main-button");
+		new Button("마지막 인사-멘트","manual-7", "main-button");
+		new Button("마지막 인사-깜빡","manual-7-1", "sub-button", "manual-7");
+
 		server.on("status-change", (data) => {
 			console.log(data);
 			if(typeof(data) === "string") data = JSON.parse(data);
 			status_change(data);
 		});
-		
+
 		let status_change = (_data) => {
 			console.log(_data.sender + " : " + _data.status);
 		};
-		
+
 	})();
 </script>
 </body>
