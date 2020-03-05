@@ -3,47 +3,64 @@
 <head>
 	<meta charset="utf-8">
 	<title>viewer</title>
-	<link rel="stylesheet" type="text/css" href="/static/css/contents.css">
+	<link rel="stylesheet" type="text/css" href="/static/css/pc.css">
 </head>
 <body>
 <div class="container">
 	<div class="viewer">
-		<h3> Speaker </h3>
-		<p id="speaker"> </p>
-		<h3> Fan </h3>
-		<p id="fan"> </p>
-		<h3> Interior LED </h3>
-		<p id="i-led"> </p>
-		<h3> Exterior LED </h3>
-		<p id="e-led"> </p>
-		<h3> Belt </h3>
-		<p id="belt"> </p>
-		<h3> BioEssence </h3>
-		<p id="scent"> </p>
-		<h3> Bubble </h3>
-		<p id="bubble"> </p>
-		<h3> Head Light </h3>
-		<p id="headlight"> </p>
+		<div class="vehicle e-led" id="e-led">
+			<div class="headlights">
+				<div class="headlight">
+
+				</div>
+				<div class="headlight">
+
+				</div>
+			</div>
+			<div class="dash-board">
+				<div class="fan">
+					<div>
+
+					</div>
+				</div>
+				<div class="i-led" id="i-led">
+
+				</div>
+				<div class="fan">
+					<div>
+
+					</div>
+				</div>
+			</div>
+			<div class="speaker">
+				<p id="speaker"></p>
+			</div>
+			<div class="scent">
+				<p id="scent"></p>
+			</div>
+		</div>
 
 	</div>
 </div>
 <script src="/socket.io/socket.io.js"></script>
 <script src="/static/js/client.js"></script>
 <script>
-	const contents = {"manual-0": {"speaker":"", "fan":"", "i-led":"","e-led":"","belt":"","scent":"","bubble":"", "headlight":""}}
-	(function() {
-		const server = io('/control');
-		const type = "contents-tablet";
-		const control = new Server(server, type);
 
-		const speaker = document.querySelector("#speaker");
-		const fan = document.querySelector("#fan");
-		const i_led = document.querySelector("#i-led");
-		const e_led = document.querySelector("#e-led");
-		const belt = document.querySelector("#belt");
-		const scent = document.querySelector("#scent");
-		const bubble = document.querySelector("#bubble");
-		const headlight = document.querySelector("#headlight");
+	(function() {
+
+		const server = io('/control');
+		const type = "viewer";
+		const control = new Server(server, type);
+		const viewer = {};
+		viewer["speaker"] = document.querySelector("#speaker");
+		viewer["fan"] = document.querySelectorAll(".fan div");
+		viewer["i-led"] = document.querySelector("#i-led");
+		viewer["e-led"] = document.querySelector("#e-led");
+		viewer["belt"] = document.querySelector("#belt");
+		viewer["scent"] = document.querySelector("#scent");
+		viewer["bubble"] = document.querySelector("#scent");
+		viewer["headlight"] = document.querySelectorAll(".headlight");
+		let _text_animation;
 
 		server.on("status-change", (data) => {
 			console.log(data);
@@ -51,10 +68,127 @@
 			status_change(data);
 		});
 
+		let text_animation = (_target, _text, callback) => {
+			clearInterval(_text_animation);
+			_target.innerText = "";
+			interior_led_change("talk", "2s")
+			_text_animation = setInterval(() =>{
+				_target.append(_text[_target.innerHTML.length]);
+				if(_target.innerHTML === _text) {
+					clearInterval(_text_animation);
+					viewer["i-led"].style.animationName = "";
+					setTimeout(callback, 1000);
+				}
+			}, 300);
+		}
+
+		let exterior_led_change = (_color) => {
+			viewer["e-led"].style.boxShadow = `0px 0px 30px ${_color}`;
+		}
+
+		let interior_led_change = (_animation, _duration) => {
+			viewer["i-led"].style.animationDuration = _duration;
+			viewer["i-led"].style.animationName = _animation;
+		}
+
+		let scent = () => {
+			text_animation(viewer["speaker"], "이제 좋은 냄새가 날거야!", function(){
+				viewer["scent"].innerText = "치익-";
+				setTimeout(function(){
+					viewer["scent"].innerText = "";
+				},1000);
+			})
+		}
+
+		let fan_animation = (_duration) => {
+			viewer["fan"].forEach((fan) => {
+				fan.style.transitionDuration = _duration;
+				fan.style.transform = "rotate(720deg)";
+				setTimeout(function(){
+					fan.style.transitionDuration = "0s";
+					fan.style.transform = "rotate(0deg)";
+				}, parseFloat(_duration) * 1000);
+			});
+		}
+
+		let fart = () => {
+			text_animation(viewer["speaker"], "앗 잠깐... 자꾸 숨을 크게 쉬었더니..", function(){
+				viewer["speaker"].innerText = "뿡!";
+				fan_animation("0.5s");
+				setTimeout(function(){
+					text_animation(viewer["speaker"], "방구가 나와버렸네!", function(){
+						exterior_led_change("#fe2");
+					});
+				}, 1000);
+			})
+		}
+
+		let bubble = () => {
+			viewer["scent"].innerText = "방울 뿅뿅";
+			setTimeout(function(){
+				viewer["scent"].innerText = "";
+			}, 1000);
+		}
+
+		let breathe = (_target, iteration, action) => {
+			let itx = 0;
+			_target.innerText = "흐읍-";
+			let _text_animation = setInterval(function(){
+				_target.innerText = _target.innerText !== "흐읍-" ? "흐읍-" : "하아-";
+				if(itx++ > iteration) {
+					_target.innerText = "";
+					clearInterval(_text_animation);
+					action();
+				}
+			}, 6000);
+			interior_led_change("breathe", "12s");
+		}
+
 		let status_change = (_data) => {
-			console.log(_data.sender + " : " + _data.status);
-			sender.innerText = _data.sender;
-			status.innerText = _data.status;
+			if (_data.status === "manual-0"){
+				exterior_led_change("#ffff");
+				 text_animation(viewer["speaker"], "안녕 친구? 반가워! 널 기다리고 있었어!", function(){
+					 text_animation(viewer["speaker"], "지금부터 내가 너의 기분을 알아 맞춰 볼게!", function(){
+						 interior_led_change("check", "2s")
+					 });
+				 });
+			}
+
+			else if(_data.status === "manual-1"){
+				exterior_led_change("#f42");
+				text_animation(viewer["speaker"], "이런, 우리 친구 머릿속에 먹구름이 꽉 차서 기분이 나쁘구나!", function(){
+					text_animation(viewer["speaker"], "나랑 그 나쁜 구름을 몰아내볼까?", function(){
+						text_animation(viewer["speaker"], "자, 배를 이렇게 부풀려서-", function(){
+							breathe(viewer["speaker"], 3, scent);
+						});
+					});
+				});
+			}
+
+			else if(_data.status === "manual-2"){
+				exterior_led_change("#f42");
+				breathe(viewer["speaker"], 1, fart);
+			}
+
+			else if(_data.status === "manual-3"){
+				exterior_led_change("#fe2");
+				text_animation(viewer["speaker"], "아직 치료받을 마음의 준비가 안 됐어?", function(){
+					text_animation(viewer["speaker"], "힘이 쑥쑥 나게 같이 용기의 노래를 부르면서 가볼까!", function(){
+						_target.innerText = "노래 나옴";
+						interior_led_change("check", "1s")
+					});
+				});
+			}
+
+			else if(_data.status === "manual-4"){
+				exterior_led_change("#fe2");
+				text_animation(viewer["speaker"], "아직 치료받을 마음의 준비가 안 됐어?", function(){
+					text_animation(viewer["speaker"], "힘이 쑥쑥 나게 같이 용기의 노래를 부르면서 가볼까!", function(){
+						_target.innerText = "노래 나옴";
+						interior_led_change("check", "1s")
+					});
+				});
+			}
 		};
 	})();
 </script>
