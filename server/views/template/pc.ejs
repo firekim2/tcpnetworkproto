@@ -2,37 +2,60 @@
 <html>
 <head>
 	<meta charset="utf-8">
-	<title>pc</title>
-	<link rel="stylesheet" type="text/css" href="/static/css/pc.css">
+	<title>viewer</title>
+	<link rel="stylesheet" type="text/css" href="/static/css/contents.css">
 </head>
 <body>
 <div class="container">
+	<div class="viewer">
+		<h3> Speaker </h3>
+		<p id="speaker"> </p>
+		<h3> Fan </h3>
+		<p id="fan"> </p>
+		<h3> Interior LED </h3>
+		<p id="i-led"> </p>
+		<h3> Exterior LED </h3>
+		<p id="e-led"> </p>
+		<h3> Belt </h3>
+		<p id="belt"> </p>
+		<h3> BioEssence </h3>
+		<p id="scent"> </p>
+		<h3> Bubble </h3>
+		<p id="bubble"> </p>
+		<h3> Head Light </h3>
+		<p id="headlight"> </p>
 
+	</div>
 </div>
 <script src="/socket.io/socket.io.js"></script>
 <script src="/static/js/client.js"></script>
 <script>
+	const contents = {"manual-0": {"speaker":"", "fan":"", "i-led":"","e-led":"","belt":"","scent":"","bubble":"", "headlight":""}}
 	(function() {
 		const server = io('/control');
 		const type = "contents-tablet";
 		const control = new Server(server, type);
 
-		});
-		const sender = document.querySelector("#sender");
-		const status = document.querySelector("#status");
+		const speaker = document.querySelector("#speaker");
+		const fan = document.querySelector("#fan");
+		const i_led = document.querySelector("#i-led");
+		const e_led = document.querySelector("#e-led");
+		const belt = document.querySelector("#belt");
+		const scent = document.querySelector("#scent");
+		const bubble = document.querySelector("#bubble");
+		const headlight = document.querySelector("#headlight");
 
 		server.on("status-change", (data) => {
 			console.log(data);
 			if(typeof(data) === "string") data = JSON.parse(data);
 			status_change(data);
 		});
-		
+
 		let status_change = (_data) => {
 			console.log(_data.sender + " : " + _data.status);
 			sender.innerText = _data.sender;
 			status.innerText = _data.status;
 		};
-	
 	})();
 </script>
 </body>
