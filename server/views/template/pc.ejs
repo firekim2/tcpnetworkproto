@@ -61,6 +61,7 @@
 		viewer["bubble"] = document.querySelector("#scent");
 		viewer["headlight"] = document.querySelectorAll(".headlight");
 		let _text_animation;
+		let _present_status;
 
 		server.on("status-change", (data) => {
 			console.log(data);
@@ -118,6 +119,7 @@
 				setTimeout(function(){
 					text_animation(viewer["speaker"], "방구가 나와버렸네!", function(){
 						exterior_led_change("#fe2");
+						interior_led_change("None", "1s");
 					});
 				}, 1000);
 			})
@@ -125,15 +127,18 @@
 
 		let bubble = () => {
 			viewer["scent"].innerText = "방울 뿅뿅";
+			fan_animation("5s");
 			setTimeout(function(){
 				viewer["scent"].innerText = "";
-			}, 1000);
+				interior_led_change("None", "1s");
+			}, 5000);
 		}
 
 		let breathe = (_target, iteration, action) => {
+			clearInterval(_text_animation);
 			let itx = 0;
 			_target.innerText = "흐읍-";
-			let _text_animation = setInterval(function(){
+			_text_animation = setInterval(function(){
 				_target.innerText = _target.innerText !== "흐읍-" ? "흐읍-" : "하아-";
 				if(itx++ > iteration) {
 					_target.innerText = "";
@@ -144,7 +149,20 @@
 			interior_led_change("breathe", "12s");
 		}
 
+		let headlight = (_color, _duration) => {
+			viewer["headlight"].forEach((headlight) => {
+				setTimeout(function(){
+					headlight.style.backgroundColor = _color;
+				}, parseFloat(_duration) * 1000);
+			});
+		}
+
 		let status_change = (_data) => {
+			if(_present_status === _data.status) return;
+			_present_status = _data.status;
+
+			headlight("#ccc", "0s");
+
 			if (_data.status === "manual-0"){
 				exterior_led_change("#ffff");
 				 text_animation(viewer["speaker"], "안녕 친구? 반가워! 널 기다리고 있었어!", function(){
@@ -174,7 +192,7 @@
 				exterior_led_change("#fe2");
 				text_animation(viewer["speaker"], "아직 치료받을 마음의 준비가 안 됐어?", function(){
 					text_animation(viewer["speaker"], "힘이 쑥쑥 나게 같이 용기의 노래를 부르면서 가볼까!", function(){
-						_target.innerText = "노래 나옴";
+						viewer["speaker"].innerText = "노래 나옴";
 						interior_led_change("check", "1s")
 					});
 				});
@@ -182,12 +200,60 @@
 
 			else if(_data.status === "manual-4"){
 				exterior_led_change("#fe2");
-				text_animation(viewer["speaker"], "아직 치료받을 마음의 준비가 안 됐어?", function(){
-					text_animation(viewer["speaker"], "힘이 쑥쑥 나게 같이 용기의 노래를 부르면서 가볼까!", function(){
-						_target.innerText = "노래 나옴";
+				text_animation(viewer["speaker"], "곧 네 머릿속에 있던 먹구름이 다 사라질 것 같아.", function(){
+					text_animation(viewer["speaker"], "후~ 하고 불면, 무지개 구름이 나올 걸?", function(){
+						viewer["speaker"].innerText = "";
 						interior_led_change("check", "1s")
 					});
 				});
+			}
+
+			else if(_data.status === "manual-4-1"){
+				exterior_led_change("#fe2");
+				interior_led_change("check", "0.5s")
+				bubble();
+			}
+
+			else if(_data.status === "manual-5"){
+				exterior_led_change("#fe2");
+				text_animation(viewer["speaker"], "오늘 받을 치료에 대해 설명해줄까? 이렇게 잠깐 숨을 참고", function(){
+					text_animation(viewer["speaker"], "찰칵!!", function(){
+						text_animation(viewer["speaker"], "하면 치료 끝!", function(){
+							interior_led_change("None", "1s");
+							exterior_led_change("#3c2");
+						});
+					});
+				});
+			}
+
+			else if(_data.status === "manual-6"){
+				exterior_led_change("#3c2");
+				text_animation(viewer["speaker"], "우와~ 오늘도 성공! 우리 친구 최고!", function(){
+					text_animation(viewer["speaker"], " 벌써 무지개 구름을 6개나 모았어!!", function(){
+						text_animation(viewer["speaker"], "다음에도 할 수 있지?", function(){
+							interior_led_change("None", "1s");
+						});
+					});
+				});
+			}
+
+			else if(_data.status === "manual-7"){
+				exterior_led_change("#3c2");
+				text_animation(viewer["speaker"], "또 보자 안녕!!", function(){
+					interior_led_change("check", "2s")
+					setTimeout(function(){
+						interior_led_change("None", "1s");
+						headlight("#333", 0);
+						exterior_led_change("#3c20");
+					}, 4000);
+				});
+			}
+
+			else if(_data.status === "manual-7-1"){
+				headlight("#ccc", "0s");
+				headlight("#333", "0.5s");
+				headlight("#ccc", "1s");
+				headlight("#333", "1.5s");
 			}
 		};
 	})();
