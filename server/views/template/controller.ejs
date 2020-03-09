@@ -20,7 +20,7 @@
 	(function() {
 		const control_panel = document.querySelector("#control-panel-story");
 		class Button {
-			static button_list = {};
+			//static button_list = new Object;
 			constructor(_name, _code, _type, _target = control_panel){
 				this.name = _name;
 				this.code = _code;
@@ -40,13 +40,16 @@
 				this.wrapper.appendChild(this.button);
 				if(_target !== control_panel) _target = Button.get_wrapper_by_code(_target);
 				_target.appendChild(this.wrapper);
-				Button.button_list[this.code] = this;
+				Button.prototype.button_list[this.code] = this;
 			}
 
 			static get_wrapper_by_code(_code){
-				return Button.button_list[_code] ? Button.button_list[_code].wrapper : false;
+				return Button.prototype.button_list[_code] ? Button.prototype.button_list[_code].wrapper : false;
 			}
 		}
+
+		Button.prototype.button_list = new Object;
+
 
 
 		const server = io('/control');
